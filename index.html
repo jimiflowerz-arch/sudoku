@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简单数独</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <h1>数独</h1>
+
+    <!-- 难度选择模态框 -->
+    <div id="difficulty-modal" class="modal">
+      <div class="modal-content">
+        <h2>选择难度</h2>
+        <div class="difficulty-buttons">
+          <button class="difficulty-btn" data-difficulty="easy" type="button">简单</button>
+          <button class="difficulty-btn" data-difficulty="medium" type="button">中等</button>
+          <button class="difficulty-btn" data-difficulty="hard" type="button">困难</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="header">
+      <div class="timer-section">
+        <span class="timer-label">用时:</span>
+        <span id="timer" class="timer">00:00</span>
+      </div>
+      <div class="difficulty-section">
+        <span class="difficulty-label">难度:</span>
+        <span id="difficulty-display" class="difficulty-display">简单</span>
+      </div>
+    </div>
+
+    <div id="sudoku-board" class="sudoku-board" aria-label="9乘9数独棋盘"></div>
+
+    <div class="buttons">
+      <button id="new-button" type="button">新游戏</button>
+      <button id="check-button" type="button">检查答案</button>
+      <button id="restart-button" type="button">重新开始</button>
+    </div>
+
+    <p id="message" class="message"></p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
