@@ -69,9 +69,7 @@ class SudokuGenerator {
   }
 }
 
-// ===== 全局变量（只声明一次）=====
-const CORRECT_PASSWORD = "zhanglei123";
-let passwordVerified = false;
+// ===== 全局变量 =====
 let currentDifficulty = "easy";
 let timerInterval = null;
 let startTime = null;
@@ -79,11 +77,7 @@ let puzzle = [];
 let solution = [];
 let answerChecked = false;
 
-// ===== DOM 元素（只获取一次）=====
-const passwordModal = document.getElementById("password-modal");
-const passwordInput = document.getElementById("password-input");
-const passwordBtn = document.getElementById("password-btn");
-const passwordError = document.getElementById("password-error");
+// ===== DOM 元素 =====
 const difficultyModal = document.getElementById("difficulty-modal");
 const difficultyDisplay = document.getElementById("difficulty-display");
 const difficultyButtons = document.querySelectorAll(".difficulty-btn");
@@ -93,25 +87,6 @@ const checkButton = document.getElementById("check-button");
 const restartButton = document.getElementById("restart-button");
 const message = document.getElementById("message");
 const timerDisplay = document.getElementById("timer");
-
-// ===== 密码验证 =====
-function checkPassword() {
-  if (passwordInput.value === CORRECT_PASSWORD) {
-    passwordVerified = true;
-    passwordModal.classList.add("hidden");
-    difficultyModal.classList.remove("hidden");
-  } else {
-    passwordError.textContent = "密码错误，请重试";
-    passwordInput.value = "";
-  }
-}
-
-function initPasswordCheck() {
-  passwordBtn.addEventListener("click", checkPassword);
-  passwordInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") checkPassword();
-  });
-}
 
 // ===== 计时器 =====
 function startTimer() {
@@ -201,14 +176,12 @@ function checkAnswer() {
   const cells = document.querySelectorAll(".cell");
   
   if (answerChecked) {
-    // 第二次点击 - 清除颜色
     cells.forEach((cell) => {
       cell.classList.remove("correct", "wrong");
     });
     message.textContent = "";
     answerChecked = false;
   } else {
-    // 第一次点击 - 显示颜色
     let allCorrect = true;
 
     cells.forEach((cell) => {
@@ -252,14 +225,15 @@ function startNewGame() {
   difficultyModal.classList.remove("hidden");
 }
 
-// ===== 按钮事件监听 =====
+// ===== 按钮事件 =====
 newButton.addEventListener("click", startNewGame);
 checkButton.addEventListener("click", checkAnswer);
 restartButton.addEventListener("click", () => {
+  answerChecked = false;
   resetTimer();
   createBoard();
   startTimer();
 });
 
 // ===== 初始化 =====
-initPasswordCheck();
+startNewGameWithDifficulty();
