@@ -1,3 +1,32 @@
+// 密码设置
+const CORRECT_PASSWORD = "zhanglei123";
+let passwordVerified = false;
+
+// 密码验证
+function initPasswordCheck() {
+  const passwordModal = document.getElementById("password-modal");
+  const passwordInput = document.getElementById("password-input");
+  const passwordBtn = document.getElementById("password-btn");
+  const passwordError = document.getElementById("password-error");
+
+  passwordBtn.addEventListener("click", () => {
+    if (passwordInput.value === CORRECT_PASSWORD) {
+      passwordVerified = true;
+      passwordModal.classList.add("hidden");
+      showDifficultyModal();
+    } else {
+      passwordError.textContent = "密码错误，请重试";
+      passwordInput.value = "";
+    }
+  });
+
+  passwordInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      passwordBtn.click();
+    }
+  });
+}
+
 // 难度相关的题目数据
 const puzzlesByDifficulty = {
   easy: [
@@ -317,4 +346,4 @@ restartButton.addEventListener("click", () => {
 });
 
 // 初始化
-showDifficultyModal();
+initPasswordCheck();
