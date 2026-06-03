@@ -77,6 +77,7 @@ let timerInterval = null;
 let startTime = null;
 let puzzle = [];
 let solution = [];
+let answerChecked = false;
 
 // ===== DOM 元素（只获取一次）=====
 const passwordModal = document.getElementById("password-modal");
@@ -198,28 +199,41 @@ function handleInput(event) {
 
 function checkAnswer() {
   const cells = document.querySelectorAll(".cell");
-  let allCorrect = true;
-
-  cells.forEach((cell) => {
-    const row = Number(cell.dataset.row);
-    const col = Number(cell.dataset.col);
-    const answer = String(solution[row][col]);
-
-    cell.classList.remove("correct", "wrong");
-
-    if (cell.value === answer) {
-      cell.classList.add("correct");
-    } else {
-      cell.classList.add("wrong");
-      allCorrect = false;
-    }
-  });
-
-  if (allCorrect) {
-    stopTimer();
-    message.textContent = "恭喜，全部正确！";
+  
+  if (answerChecked) {
+    // 第二次点击 - 清除颜色
+    cells.forEach((cell) => {
+      cell.classList.remove("correct", "wrong");
+    });
+    message.textContent = "";
+    answerChecked = false;
   } else {
-    message.textContent = "还有一些格子需要修改。";
+    // 第一次点击 - 显示颜色
+    let allCorrect = true;
+
+    cells.forEach((cell) => {
+      const row = Number(cell.dataset.row);
+      const col = Number(cell.dataset.col);
+      const answer = String(solution[row][col]);
+
+      cell.classList.remove("correct", "wrong");
+
+      if (cell.value === answer) {
+        cell.classList.add("correct");
+      } else {
+        cell.classList.add("wrong");
+        allCorrect = false;
+      }
+    });
+
+    if (allCorrect) {
+      stopTimer();
+      message.textContent = "恭喜，全部正确！";
+    } else {
+      message.textContent = "还有一些格子需要修改。";
+    }
+    
+    answerChecked = true;
   }
 }
 
@@ -228,6 +242,7 @@ function startNewGameWithDifficulty() {
   const generated = SudokuGenerator.generatePuzzle(currentDifficulty);
   puzzle = generated.puzzle;
   solution = generated.solution;
+  answerChecked = false;
   resetTimer();
   createBoard();
   startTimer();
