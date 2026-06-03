@@ -69,25 +69,31 @@ class SudokuGenerator {
   }
 }
 
-// 密码设置
+// ===== 全局变量（只声明一次）=====
 const CORRECT_PASSWORD = "zhanglei123";
 let passwordVerified = false;
+let currentDifficulty = "easy";
+let timerInterval = null;
+let startTime = null;
+let puzzle = [];
+let solution = [];
 
-// 获取所有需要的元素
+// ===== DOM 元素（只获取一次）=====
 const passwordModal = document.getElementById("password-modal");
 const passwordInput = document.getElementById("password-input");
 const passwordBtn = document.getElementById("password-btn");
 const passwordError = document.getElementById("password-error");
 const difficultyModal = document.getElementById("difficulty-modal");
+const difficultyDisplay = document.getElementById("difficulty-display");
+const difficultyButtons = document.querySelectorAll(".difficulty-btn");
+const board = document.getElementById("sudoku-board");
+const newButton = document.getElementById("new-button");
+const checkButton = document.getElementById("check-button");
+const restartButton = document.getElementById("restart-button");
+const message = document.getElementById("message");
+const timerDisplay = document.getElementById("timer");
 
-// 密码验证
-function initPasswordCheck() {
-  passwordBtn.addEventListener("click", checkPassword);
-  passwordInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") checkPassword();
-  });
-}
-
+// ===== 密码验证 =====
 function checkPassword() {
   if (passwordInput.value === CORRECT_PASSWORD) {
     passwordVerified = true;
@@ -99,182 +105,14 @@ function checkPassword() {
   }
 }
 
-// 难度相关的题目数据
-const puzzlesByDifficulty = {
-  easy: [
-    {
-      puzzle: [
-        [5, 3, 0, 0, 7, 0, 0, 0, 0],
-        [6, 0, 0, 1, 9, 5, 0, 0, 0],
-        [0, 9, 8, 0, 0, 0, 0, 6, 0],
-        [8, 0, 0, 0, 6, 0, 0, 0, 3],
-        [4, 0, 0, 8, 0, 3, 0, 0, 1],
-        [7, 0, 0, 0, 2, 0, 0, 0, 6],
-        [0, 6, 0, 0, 0, 0, 2, 8, 0],
-        [0, 0, 0, 4, 1, 9, 0, 0, 5],
-        [0, 0, 0, 0, 8, 0, 0, 7, 9]
-      ],
-      solution: [
-        [5, 3, 4, 6, 7, 8, 9, 1, 2],
-        [6, 7, 2, 1, 9, 5, 3, 4, 8],
-        [1, 9, 8, 3, 4, 2, 5, 6, 7],
-        [8, 5, 9, 7, 6, 1, 4, 2, 3],
-        [4, 2, 6, 8, 5, 3, 7, 9, 1],
-        [7, 1, 3, 9, 2, 4, 8, 5, 6],
-        [9, 6, 1, 5, 3, 7, 2, 8, 4],
-        [2, 8, 7, 4, 1, 9, 6, 3, 5],
-        [3, 4, 5, 2, 8, 6, 1, 7, 9]
-      ]
-    }
-  ],
-  medium: [
-    {
-      puzzle: [
-        [0, 0, 0, 2, 6, 0, 7, 0, 1],
-        [6, 0, 0, 0, 7, 0, 0, 0, 0],
-        [0, 9, 0, 0, 0, 4, 2, 0, 0],
-        [0, 0, 7, 1, 0, 0, 0, 0, 0],
-        [5, 0, 0, 7, 0, 0, 0, 0, 4],
-        [0, 0, 0, 0, 0, 9, 3, 0, 0],
-        [0, 0, 5, 3, 0, 0, 0, 7, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 3],
-        [4, 0, 2, 0, 5, 8, 0, 0, 0]
-      ],
-      solution: [
-        [8, 3, 4, 2, 6, 5, 7, 9, 1],
-        [6, 1, 2, 9, 7, 3, 5, 8, 0],
-        [7, 9, 0, 8, 0, 4, 2, 6, 0],
-        [0, 0, 7, 1, 0, 0, 0, 0, 0],
-        [5, 0, 0, 7, 0, 0, 0, 0, 4],
-        [0, 0, 0, 0, 0, 9, 3, 0, 0],
-        [0, 0, 5, 3, 0, 0, 0, 7, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 3],
-        [4, 0, 2, 0, 5, 8, 0, 0, 0]
-      ]
-    }
-  ],
-  hard: [
-    {
-      puzzle: [
-        [3, 0, 0, 0, 1, 0, 0, 0, 2],
-        [0, 0, 0, 0, 0, 8, 0, 4, 0],
-        [0, 4, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 4, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 5, 7, 0, 0, 0, 0],
-        [0, 0, 0, 4, 0, 0, 2, 0, 0],
-        [0, 0, 2, 0, 0, 0, 0, 8, 0],
-        [0, 9, 0, 3, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 8, 0, 0, 0, 3]
-      ],
-      solution: [
-        [3, 8, 5, 9, 1, 6, 4, 7, 2],
-        [7, 1, 9, 2, 5, 8, 6, 4, 0],
-        [0, 4, 0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 4, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 5, 7, 0, 0, 0, 0],
-        [0, 0, 0, 4, 0, 0, 2, 0, 0],
-        [0, 0, 2, 0, 0, 0, 0, 8, 0],
-        [0, 9, 0, 3, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 8, 0, 0, 0, 3]
-      ]
-    }
-  ]
-};
+function initPasswordCheck() {
+  passwordBtn.addEventListener("click", checkPassword);
+  passwordInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") checkPassword();
+  });
+}
 
-// 预置的数独题目集合（保留用于兼容）
-const puzzles = [
-  {
-    puzzle: [
-      [5, 3, 0, 0, 7, 0, 0, 0, 0],
-      [6, 0, 0, 1, 9, 5, 0, 0, 0],
-      [0, 9, 8, 0, 0, 0, 0, 6, 0],
-      [8, 0, 0, 0, 6, 0, 0, 0, 3],
-      [4, 0, 0, 8, 0, 3, 0, 0, 1],
-      [7, 0, 0, 0, 2, 0, 0, 0, 6],
-      [0, 6, 0, 0, 0, 0, 2, 8, 0],
-      [0, 0, 0, 4, 1, 9, 0, 0, 5],
-      [0, 0, 0, 0, 8, 0, 0, 7, 9]
-    ],
-    solution: [
-      [5, 3, 4, 6, 7, 8, 9, 1, 2],
-      [6, 7, 2, 1, 9, 5, 3, 4, 8],
-      [1, 9, 8, 3, 4, 2, 5, 6, 7],
-      [8, 5, 9, 7, 6, 1, 4, 2, 3],
-      [4, 2, 6, 8, 5, 3, 7, 9, 1],
-      [7, 1, 3, 9, 2, 4, 8, 5, 6],
-      [9, 6, 1, 5, 3, 7, 2, 8, 4],
-      [2, 8, 7, 4, 1, 9, 6, 3, 5],
-      [3, 4, 5, 2, 8, 6, 1, 7, 9]
-    ]
-  },
-  {
-    puzzle: [
-      [0, 0, 0, 2, 6, 0, 7, 0, 1],
-      [6, 0, 0, 0, 7, 0, 0, 0, 0],
-      [0, 9, 0, 0, 0, 4, 2, 0, 0],
-      [0, 0, 7, 1, 0, 0, 0, 0, 0],
-      [5, 0, 0, 7, 0, 0, 0, 0, 4],
-      [0, 0, 0, 0, 0, 9, 3, 0, 0],
-      [0, 0, 5, 3, 0, 0, 0, 7, 0],
-      [0, 0, 0, 0, 1, 0, 0, 0, 3],
-      [4, 0, 2, 0, 5, 8, 0, 0, 0]
-    ],
-    solution: [
-      [8, 3, 4, 2, 6, 5, 7, 9, 1],
-      [6, 1, 2, 9, 7, 3, 5, 8, 0],
-      [7, 9, 0, 8, 0, 4, 2, 6, 0],
-      [0, 0, 7, 1, 0, 0, 0, 0, 0],
-      [5, 0, 0, 7, 0, 0, 0, 0, 4],
-      [0, 0, 0, 0, 0, 9, 3, 0, 0],
-      [0, 0, 5, 3, 0, 0, 0, 7, 0],
-      [0, 0, 0, 0, 1, 0, 0, 0, 3],
-      [4, 0, 2, 0, 5, 8, 0, 0, 0]
-    ]
-  },
-  {
-    puzzle: [
-      [3, 0, 0, 0, 1, 0, 0, 0, 2],
-      [0, 0, 0, 0, 0, 8, 0, 4, 0],
-      [0, 4, 0, 0, 0, 0, 1, 0, 0],
-      [0, 0, 4, 0, 0, 1, 0, 0, 0],
-      [0, 0, 0, 5, 7, 0, 0, 0, 0],
-      [0, 0, 0, 4, 0, 0, 2, 0, 0],
-      [0, 0, 2, 0, 0, 0, 0, 8, 0],
-      [0, 9, 0, 3, 0, 0, 0, 0, 0],
-      [1, 0, 0, 0, 8, 0, 0, 0, 3]
-    ],
-    solution: [
-      [3, 8, 5, 9, 1, 6, 4, 7, 2],
-      [7, 1, 9, 2, 5, 8, 6, 4, 0],
-      [0, 4, 0, 0, 0, 0, 1, 0, 0],
-      [0, 0, 4, 0, 0, 1, 0, 0, 0],
-      [0, 0, 0, 5, 7, 0, 0, 0, 0],
-      [0, 0, 0, 4, 0, 0, 2, 0, 0],
-      [0, 0, 2, 0, 0, 0, 0, 8, 0],
-      [0, 9, 0, 3, 0, 0, 0, 0, 0],
-      [1, 0, 0, 0, 8, 0, 0, 0, 3]
-    ]
-  }
-];
-
-let currentPuzzleIndex = 0;
-let puzzle = puzzles[0].puzzle;
-let solution = puzzles[0].solution;
-let currentDifficulty = "easy";
-let timerInterval = null;
-let startTime = null;
-
-const board = document.getElementById("sudoku-board");
-const newButton = document.getElementById("new-button");
-const checkButton = document.getElementById("check-button");
-const restartButton = document.getElementById("restart-button");
-const message = document.getElementById("message");
-const timerDisplay = document.getElementById("timer");
-const difficultyModal = document.getElementById("difficulty-modal");
-const difficultyDisplay = document.getElementById("difficulty-display");
-const difficultyButtons = document.querySelectorAll(".difficulty-btn");
-
-// 计时器功能
+// ===== 计时器 =====
 function startTimer() {
   startTime = Date.now();
   clearInterval(timerInterval);
@@ -297,15 +135,7 @@ function resetTimer() {
   timerDisplay.textContent = "00:00";
 }
 
-// 难度选择功能
-function showDifficultyModal() {
-  difficultyModal.classList.remove("hidden");
-}
-
-function hideDifficultyModal() {
-  difficultyModal.classList.add("hidden");
-}
-
+// ===== 难度选择 =====
 difficultyButtons.forEach((button) => {
   button.addEventListener("click", (e) => {
     const difficulty = e.target.dataset.difficulty;
@@ -317,11 +147,12 @@ difficultyButtons.forEach((button) => {
     
     currentDifficulty = difficulty;
     difficultyDisplay.textContent = difficultyNames[difficulty];
-    hideDifficultyModal();
+    difficultyModal.classList.add("hidden");
     startNewGameWithDifficulty();
   });
 });
 
+// ===== 棋盘操作 =====
 function createBoard() {
   board.innerHTML = "";
   message.textContent = "";
@@ -358,12 +189,9 @@ function createBoard() {
 
 function handleInput(event) {
   const cell = event.target;
-
-  // 只允许输入 1 到 9，其他内容会被清空。
   if (!/^[1-9]$/.test(cell.value)) {
     cell.value = "";
   }
-
   cell.classList.remove("correct", "wrong");
   message.textContent = "";
 }
@@ -395,6 +223,7 @@ function checkAnswer() {
   }
 }
 
+// ===== 游戏控制 =====
 function startNewGameWithDifficulty() {
   const generated = SudokuGenerator.generatePuzzle(currentDifficulty);
   puzzle = generated.puzzle;
@@ -408,6 +237,7 @@ function startNewGame() {
   difficultyModal.classList.remove("hidden");
 }
 
+// ===== 按钮事件监听 =====
 newButton.addEventListener("click", startNewGame);
 checkButton.addEventListener("click", checkAnswer);
 restartButton.addEventListener("click", () => {
@@ -416,5 +246,5 @@ restartButton.addEventListener("click", () => {
   startTimer();
 });
 
-// 初始化
+// ===== 初始化 =====
 initPasswordCheck();
