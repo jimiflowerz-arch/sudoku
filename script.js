@@ -1,3 +1,74 @@
+// 数独生成器
+class SudokuGenerator {
+  static generateSolution() {
+    const grid = Array(9).fill(null).map(() => Array(9).fill(0));
+    this.fillGrid(grid);
+    return grid;
+  }
+
+  static fillGrid(grid) {
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (grid[row][col] === 0) {
+          const nums = this.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+          for (let num of nums) {
+            if (this.isValid(grid, row, col, num)) {
+              grid[row][col] = num;
+              if (this.fillGrid(grid)) {
+                return true;
+              }
+              grid[row][col] = 0;
+            }
+          }
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  static isValid(grid, row, col, num) {
+    for (let i = 0; i < 9; i++) {
+      if (grid[row][i] === num || grid[i][col] === num) return false;
+    }
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let i = boxRow; i < boxRow + 3; i++) {
+      for (let j = boxCol; j < boxCol + 3; j++) {
+        if (grid[i][j] === num) return false;
+      }
+    }
+    return true;
+  }
+
+  static generatePuzzle(difficulty) {
+    const solution = this.generateSolution();
+    const puzzle = solution.map(row => [...row]);
+    const cellsToRemove = difficulty === "easy" ? 40 : difficulty === "medium" ? 50 : 60;
+    
+    let removed = 0;
+    while (removed < cellsToRemove) {
+      const row = Math.floor(Math.random() * 9);
+      const col = Math.floor(Math.random() * 9);
+      if (puzzle[row][col] !== 0) {
+        puzzle[row][col] = 0;
+        removed++;
+      }
+    }
+    
+    return { puzzle, solution };
+  }
+
+  static shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+}
+
 // 密码设置
 const CORRECT_PASSWORD = "zhanglei123";
 let passwordVerified = false;
@@ -325,17 +396,16 @@ function checkAnswer() {
 }
 
 function startNewGameWithDifficulty() {
-  const puzzlesForDifficulty = puzzlesByDifficulty[currentDifficulty];
-  const randomIndex = Math.floor(Math.random() * puzzlesForDifficulty.length);
-  puzzle = puzzlesForDifficulty[randomIndex].puzzle;
-  solution = puzzlesForDifficulty[randomIndex].solution;
+  const generated = SudokuGenerator.generatePuzzle(currentDifficulty);
+  puzzle = generated.puzzle;
+  solution = generated.solution;
   resetTimer();
   createBoard();
   startTimer();
 }
 
 function startNewGame() {
-  showDifficultyModal();
+  difficultyModal.classList.remove("hidden");
 }
 
 newButton.addEventListener("click", startNewGame);
