@@ -2,29 +2,30 @@
 const CORRECT_PASSWORD = "zhanglei123";
 let passwordVerified = false;
 
+// 获取所有需要的元素
+const passwordModal = document.getElementById("password-modal");
+const passwordInput = document.getElementById("password-input");
+const passwordBtn = document.getElementById("password-btn");
+const passwordError = document.getElementById("password-error");
+const difficultyModal = document.getElementById("difficulty-modal");
+
 // 密码验证
 function initPasswordCheck() {
-  const passwordModal = document.getElementById("password-modal");
-  const passwordInput = document.getElementById("password-input");
-  const passwordBtn = document.getElementById("password-btn");
-  const passwordError = document.getElementById("password-error");
-
-  passwordBtn.addEventListener("click", () => {
-    if (passwordInput.value === CORRECT_PASSWORD) {
-      passwordVerified = true;
-      passwordModal.classList.add("hidden");
-      showDifficultyModal();
-    } else {
-      passwordError.textContent = "密码错误，请重试";
-      passwordInput.value = "";
-    }
-  });
-
+  passwordBtn.addEventListener("click", checkPassword);
   passwordInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      passwordBtn.click();
-    }
+    if (e.key === "Enter") checkPassword();
   });
+}
+
+function checkPassword() {
+  if (passwordInput.value === CORRECT_PASSWORD) {
+    passwordVerified = true;
+    passwordModal.classList.add("hidden");
+    difficultyModal.classList.remove("hidden");
+  } else {
+    passwordError.textContent = "密码错误，请重试";
+    passwordInput.value = "";
+  }
 }
 
 // 难度相关的题目数据
